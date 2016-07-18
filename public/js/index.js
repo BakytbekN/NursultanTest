@@ -7,7 +7,7 @@ app
     Backbone.history.navigate(fragment, {trigger: true})
   })
   .on('navigate', function () {
-    if (window.ga) window.ga('send', 'pageview')
+    if (ga) ga('send', 'pageview')
   })
   .on('before:start', function () {
     app.layout = new Layout()

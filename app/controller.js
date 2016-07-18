@@ -6,20 +6,20 @@ const searchResults2json = require('./utils/search-results2json')
 const request = (options) => Q.denodeify(require('request'))(options).then(_.first)
 
 const controller = {
-  home: function * () {
-    _.assign(this.state, {
-      title: `Holly Quintet${this.get('host') === 'localhost:5000' ? ' (local)' : ''}`
+  home: async (ctx) => {
+    _.assign(ctx.state, {
+      title: `Holly Quintet${ctx.get('host') === 'localhost:5000' ? ' (local)' : ''}`
     })
-    this.body = yield this.render('home/index', this.state)
+    await ctx.render('home/index', ctx.state)
   },
 
-  search: function * () {
+  search (ctx) {
     // for dev use
-    // return this.body = require('./utils/search-results2json/scheme')
+    // return ctx.body = require('./utils/search-results2json/scheme')
 
-    const query = this.query.query
+    const query = ctx.query.query
 
-    var scope = this.query.scope
+    var scope = ctx.query.scope
 
     switch (scope) {
       case 'itunes-hk':
@@ -60,7 +60,7 @@ const controller = {
         q: `${query} site:${scope}`
       },
       headers: {
-        'user-agent': this.request.get('user-agent')
+        'user-agent': ctx.request.get('user-agent')
       }
     }
 
@@ -68,11 +68,11 @@ const controller = {
     var error
 
     try {
-      searchResponse = yield request(requestOption)
-      this.set('X-Proxy-URL', searchResponse.request.uri.href)
+      searchResponse = request(requestOption)
+      ctx.set('X-Proxy-URL', searchResponse.request.uri.href)
 
       try {
-        this.body = searchResults2json(searchResponse.body, scope)
+        ctx.body = searchResults2json(searchResponse.body, scope)
       } catch (e) {
         console.error('Error when parsing results from Google:')
         error = e
@@ -84,22 +84,22 @@ const controller = {
 
     if (!error) return
 
-    this.status = 500
-    this.body = {error: _.pick(error, 'message')}
+    ctx.status = 500
+    ctx.body = {error: _.pick(error, 'message')}
     console.error(error.stack)
   },
 
-  download: function * () {
-    var res = yield request({
-      url: this.query.url,
+  download (ctx) {
+    var res = request({
+      url: ctx.query.url,
       headers: {
         'user-agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:39.0) Gecko/20100101 Firefox/39.0'
       },
       encoding: null
     })
       .catch((e) => {
-        this.status = 500
-        this.body = `${e}`
+        ctx.status = 500
+        ctx.body = `${e}`
       })
 
     if (!res) return
@@ -107,26 +107,26 @@ const controller = {
     // in case some covers from itunes only have a 600x600 one
     if (res.statusCode === 404) {
       const keyword = '/cover1200x1200.'
-      const index = this.query.url.lastIndexOf(keyword)
-      const count = _.size(this.query.url) - index - keyword.length
+      const index = ctx.query.url.lastIndexOf(keyword)
+      const count = _.size(ctx.query.url) - index - keyword.length
 
       if (index > 0 && count < 5) {
-        res = yield request({
-          url: this.query.url.replace(keyword, '/cover600x600.'),
+        res = request({
+          url: ctx.query.url.replace(keyword, '/cover600x600.'),
           headers: {
             'user-agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:39.0) Gecko/20100101 Firefox/39.0'
           },
           encoding: null
         }).catch((e) => {
-          this.status = 500
-          this.body = `${e}`
+          ctx.status = 500
+          ctx.body = `${e}`
         })
       }
     }
 
-    this.set(res.headers)
-    this.body = res.body
-    this.attachment(this.query.filename || res.request.uri.pathname)
+    ctx.set(res.headers)
+    ctx.body = res.body
+    ctx.attachment(ctx.query.filename || res.request.uri.pathname)
   }
 }
 

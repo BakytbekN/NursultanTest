@@ -1,26 +1,18 @@
-const koa = require('koa')
-const views = require('koa-render')
-const morgan = require('koa-morgan')
-const favicon = require('koa-favicon')
-const serve = require('koa-static')
-const json = require('koa-json')
-const fresh = require('koa-fresh')
-const compress = require('koa-compress')
+import Koa from 'koa'
+import views from 'koa-views'
+import morgan from 'koa-morgan'
+import favicon from 'koa-favicon'
+import serve from 'koa-static'
+import json from 'koa-json'
+import compress from 'koa-compress'
+import router from './app/router'
 
-const router = require('./app/router')
-
-const port = process.env.PORT || 5000
-
-const app = koa()
-app
+(new Koa())
   .use(compress())
-  .use(fresh())
   .use(favicon('./public/favicon.ico'))
-  .use(views('./view', 'jade'))
+  .use(views('view', {extension: 'jade'}))
   .use(serve('./public'))
-  .use(morgan.middleware('combined'))
+  .use(morgan('combined'))
   .use(json())
   .use(router.routes())
-  .listen(port, function () {
-    console.log(`Holly Quintet has been started on port ${port} ...`)
-  })
+  .listen(process.env.PORT || 5000)
