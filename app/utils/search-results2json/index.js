@@ -1,6 +1,6 @@
-const url = require('url')
-const _ = require('lodash')
-const cheerio = require('cheerio')
+import url from 'url'
+import _ from 'lodash'
+import cheerio from 'cheerio'
 
 const getOriginSrcFromItunes = function (src) {
   const falseReg = /cover\d{3}x\d{3}/

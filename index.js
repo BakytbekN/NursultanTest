@@ -7,7 +7,12 @@ import json from 'koa-json'
 import compress from 'koa-compress'
 import router from './app/router'
 
-(new Koa())
+const port = process.argv[2] ||
+  process.env.PORT ||
+  process.env.npm_package_config_port ||
+  5000
+
+new Koa()
   .use(compress())
   .use(favicon('./public/favicon.ico'))
   .use(views('view', {extension: 'jade'}))
@@ -15,4 +20,6 @@ import router from './app/router'
   .use(morgan('combined'))
   .use(json())
   .use(router.routes())
-  .listen(process.env.PORT || 5000)
+  .listen(port)
+
+console.info(`${process.env.npm_package_name || 'app'} is listening on port ${port}...`)

@@ -1,5 +1,5 @@
-const _ = require('lodash')
-const Q = require('q')
+import _ from 'lodash'
+import Q from 'q'
 
 const searchResults2json = require('./utils/search-results2json')
 
@@ -19,7 +19,7 @@ const controller = {
 
     const query = ctx.query.query
 
-    var scope = ctx.query.scope
+    let scope = ctx.query.scope
 
     switch (scope) {
       case 'itunes-hk':
@@ -64,8 +64,8 @@ const controller = {
       }
     }
 
-    var searchResponse
-    var error
+    let searchResponse
+    let error
 
     try {
       searchResponse = request(requestOption)
@@ -90,7 +90,7 @@ const controller = {
   },
 
   download (ctx) {
-    var res = request({
+    let res = request({
       url: ctx.query.url,
       headers: {
         'user-agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:39.0) Gecko/20100101 Firefox/39.0'

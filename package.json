@@ -7,8 +7,7 @@
   "scripts": {
     "deploy": "webpack -p",
     "dev": "webpack -dw",
-    "prestart": "npm run deploy",
-    "start": "node index",
+    "start": "node bin/www",
     "test": "eslint ."
   },
   "repository": "arianrhodsandlot/Holly-Quintet",
