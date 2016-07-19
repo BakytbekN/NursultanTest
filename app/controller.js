@@ -1,7 +1,6 @@
 import _ from 'lodash'
 import Q from 'q'
-
-const searchResults2json = require('./utils/search-results2json')
+import search from './utils/search'
 
 const request = (options) => Q.denodeify(require('request'))(options).then(_.first)
 
@@ -13,10 +12,7 @@ const controller = {
     await ctx.render('home/index', ctx.state)
   },
 
-  search (ctx) {
-    // for dev use
-    // return ctx.body = require('./utils/search-results2json/scheme')
-
+  search: async (ctx) => {
     const query = ctx.query.query
 
     let scope = ctx.query.scope
@@ -51,42 +47,20 @@ const controller = {
         break
     }
 
-    const requestOption = {
-      baseUrl: 'https://www.google.com',
-      url: '/search',
-      qs: {
-        tbm: 'isch',
-        gws_rd: 'cr', // get rid of our request being redirected by country
-        q: `${query} site:${scope}`
-      },
-      headers: {
-        'user-agent': ctx.request.get('user-agent')
-      }
-    }
-
-    let searchResponse
     let error
-
     try {
-      searchResponse = request(requestOption)
-      ctx.set('X-Proxy-URL', searchResponse.request.uri.href)
-
-      try {
-        ctx.body = searchResults2json(searchResponse.body, scope)
-      } catch (e) {
-        console.error('Error when parsing results from Google:')
-        error = e
-      }
+      await const covers = search(query, scope)
+      ctx.body = covers
     } catch (e) {
-      console.error('Error when connect to Google:')
+      console.error('Error when parsing results from Google:')
       error = e
     }
 
-    if (!error) return
-
-    ctx.status = 500
-    ctx.body = {error: _.pick(error, 'message')}
-    console.error(error.stack)
+    if (error) {
+      console.error(error.stack)
+      ctx.status = 500
+      ctx.body = {error: _.pick(error, 'message')}
+    }
   },
 
   download (ctx) {
