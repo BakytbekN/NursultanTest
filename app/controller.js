@@ -22,10 +22,7 @@ const controller = {
     var scope = this.query.scope
 
     switch (scope) {
-      case 'itunes-hk':
-      case 'itunes-jp':
-      case 'itunes-tw':
-      case 'itunes-us':
+        case 'itunes-us':
         scope = `itunes.apple.com/${scope.slice('itunes-'.length)}/album`
         break
       case 'amazon-com':
